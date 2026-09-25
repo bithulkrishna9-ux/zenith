@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Canteen | Campus Dining & Live Queue Platform</title>
+  <meta name="description" content="A modern university smart canteen management and online food ordering platform. Features live queue tracking, pre-ordering, digital campus wallet payments, inventory monitoring, and kitchen analytics.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍱</text></svg>">
+</head>
+<body>
+
+  <!-- ================= Top Navigation Bar (Dark Navy Blue #0B1F3A) ================= -->
+  <header class="top-navbar">
+    <div class="top-navbar-inner">
+      <!-- University & Canteen Logo -->
+      <div class="nav-brand" onclick="window.studentPortal.switchStudentTab('home')">
+        <div class="brand-crest">🏛️</div>
+        <div class="brand-text">
+          <span class="brand-name">Campus Canteen</span>
+          <span class="brand-subtext">University Dining Platform</span>
+        </div>
+      </div>
+
+      <!-- Role Switcher (Student vs Admin) -->
+      <div class="role-toggle-group" aria-label="Portal Mode">
+        <button class="role-toggle-btn active" data-role="student" onclick="window.app.switchRole('student')">
+          <span>👨‍🎓</span> Student Portal
+        </button>
+        <button class="role-toggle-btn" data-role="admin" onclick="window.app.switchRole('admin')">
+          <span>👨‍🍳</span> Admin & Kitchen
+        </button>
+      </div>
+
+      <!-- Nav Actions -->
+      <div class="nav-actions">
+        <!-- Live Active Token Highlight (if student has order in progress) -->
+        <div id="nav-active-order-pill" class="nav-active-token student-header-elem" style="display: none;" title="View Live Order & Queue Tracker">
+          <span>⚡</span> Token #A1042: <strong>PREPARING</strong>
+        </div>
+
+        <!-- Campus Wallet Balance Pill -->
+        <div class="nav-wallet-pill student-header-elem" onclick="window.studentPortal.switchStudentTab('wallet')" title="View Campus Wallet">
+          <span>💳</span>
+          <span id="nav-wallet-balance">₹450.00</span>
+          <span style="font-size: 0.75rem; background: #FFFFFF; color: var(--primary-navy); border-radius: 50%; width: 16px; height: 16px; display:inline-flex; align-items:center; justify-content:center; font-weight: 800;">+</span>
+        </div>
+
+        <!-- Notifications -->
+        <button class="nav-icon-btn" onclick="window.app.openNotifications()" aria-label="Notifications" title="Notifications">
+          <span>🔔</span>
+          <span id="notif-badge" class="badge-counter" style="display: none;">0</span>
+        </button>
+
+        <!-- Sound Toggle -->
+        <button id="sound-toggle-btn" class="nav-icon-btn" onclick="window.app.toggleSound()" aria-label="Toggle Sound" title="Sound Effects">
+          🔊
+        </button>
+
+        <!-- Cart Button -->
+        <button class="nav-icon-btn student-header-elem" onclick="window.studentPortal.openCartDrawer()" aria-label="Tray Cart" title="View Cart">
+          <span>🛒</span>
+          <span id="cart-badge" class="badge-counter" style="display: none;">0</span>
+        </button>
+
+        <!-- Reset Demo -->
+        <button class="nav-icon-btn" onclick="window.app.resetAllDemoData()" aria-label="Reset Demo Data" title="Reset Demo Data">
+          🔄
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= Secondary Navigation Strip (Clean White & Navy) ================= -->
+  <nav id="student-secondary-nav" class="secondary-navbar" aria-label="Student Navigation">
+    <div class="secondary-navbar-inner">
+      <ul class="nav-links-list">
+        <li>
+          <button class="nav-item-btn active" data-tab="home" onclick="window.studentPortal.switchStudentTab('home')">
+            <span>🏠</span> Home
+          </button>
+        </li>
+        <li>
+          <button class="nav-item-btn" data-tab="menu" onclick="window.studentPortal.switchStudentTab('menu')">
+            <span>🍽️</span> Menu
+          </button>
+        </li>
+        <li>
+          <button class="nav-item-btn" data-tab="orders" onclick="window.studentPortal.switchStudentTab('orders')">
+            <span>📜</span> Orders
+          </button>
+        </li>
+        <li>
+          <button class="nav-item-btn" data-tab="tracker" onclick="window.studentPortal.switchStudentTab('tracker')">
+            <span>🎫</span> Track Order
+            <span class="nav-item-pill">Live</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-item-btn" data-tab="wallet" onclick="window.studentPortal.switchStudentTab('wallet')">
+            <span>💳</span> Wallet
+          </button>
+        </li>
+        <li>
+          <button class="nav-item-btn" data-tab="favorites" onclick="window.studentPortal.switchStudentTab('favorites')">
+            <span>❤️</span> Favorites
+          </button>
+        </li>
+        <li>
+          <button class="nav-item-btn" data-tab="feedback" onclick="window.studentPortal.switchStudentTab('feedback')">
+            <span>⭐</span> Feedback
+          </button>
+        </li>
+        <li>
+          <button class="nav-item-btn" data-tab="profile" onclick="window.studentPortal.switchStudentTab('profile')">
+            <span>👤</span> Profile
+          </button>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Secondary Admin Nav Bar (When in Admin mode) -->
+  <nav id="admin-secondary-nav" class="secondary-navbar" style="display: none;" aria-label="Admin Navigation">
+    <div class="secondary-navbar-inner">
+      <ul class="nav-links-list">
+        <li>
+          <button class="nav-item-btn admin-nav-item active" data-tab="orders" onclick="window.adminConsole.switchAdminTab('orders')">
+            <span>📋</span> Live Orders
+          </button>
+        </li>
+        <li>
+          <button class="nav-item-btn admin-nav-item" data-tab="menu" onclick="window.adminConsole.switchAdminTab('menu')">
+            <span>🍽️</span> Menu & Stock
+          </button>
+        </li>
+        <li>
+          <button class="nav-item-btn admin-nav-item" data-tab="inventory" onclick="window.adminConsole.switchAdminTab('inventory')">
+            <span>📦</span> Ingredients
+          </button>
+        </li>
+        <li>
+          <button class="nav-item-btn admin-nav-item" data-tab="analytics" onclick="window.adminConsole.switchAdminTab('analytics')">
+            <span>📈</span> Sales Analytics
+          </button>
+        </li>
+        <li>
+          <button class="nav-item-btn admin-nav-item" data-tab="feedback" onclick="window.adminConsole.switchAdminTab('feedback')">
+            <span>⭐</span> Student Reviews
+          </button>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ================= Main Content Container ================= -->
+  <main class="main-content">
+
+    <!-- =================================================================
+         1. STUDENT PORTAL SECTION
+         ================================================================= -->
+    <section id="student-portal-wrapper">
+
+      <!-- Hero Banner with Pre-Order Controls -->
+      <div id="student-hero-banner" class="hero-white-card">
+        <div class="hero-text-block">
+          <h1>Campus Dining, Simplified.</h1>
+          <p>
+            Order delicious meals ahead of time, avoid lunch rush physical queues, and track your food preparation in real time with automated token alerts.
+          </p>
+          <div class="campus-status-tags">
+            <div class="campus-status-pill">
+              <span class="status-bullet green"></span>
+              <span>Kitchen: <strong>Open & Cooking</strong></span>
+            </div>
+            <div class="campus-status-pill">
+              <span class="status-bullet green"></span>
+              <span>Est. Queue Wait: <strong>6-8 mins</strong></span>
+            </div>
+            <div class="campus-status-pill">
+              <span>⚡ Express Pickup: <strong>Counter 2 Active</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pre-Order Card -->
+        <div class="preorder-card">
+          <div class="preorder-card-title">
+            <span>🕒</span>
+            <span>Pre-Order & Pickup Time</span>
+          </div>
+          <p class="preorder-card-desc">
+            Select your preferred collection slot to have your meal ready when you arrive:
+          </p>
+          <div class="time-slots-grid">
+            <button class="time-slot-btn active" data-time="ASAP" onclick="window.studentPortal.setPickupTime('ASAP')">⚡ ASAP</button>
+            <button class="time-slot-btn" data-time="12:30 PM" onclick="window.studentPortal.setPickupTime('12:30 PM')">12:30 PM</button>
+            <button class="time-slot-btn" data-time="1:00 PM" onclick="window.studentPortal.setPickupTime('1:00 PM')">1:00 PM</button>
+            <button class="time-slot-btn" data-time="1:30 PM" onclick="window.studentPortal.setPickupTime('1:30 PM')">1:30 PM</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Category Filters (Shown on Home and Menu tabs) -->
+      <div id="student-search-bar" class="search-filter-section">
+        <div class="search-input-box">
+          <span class="search-icon-svg">🔍</span>
+          <input type="text" id="menu-search-input" class="search-field" placeholder="Search biryani, masala dosa, thali meals, cold beverages, snacks..." />
+        </div>
+
+        <div class="category-filter-row">
+          <!-- Large Category Pills -->
+          <div class="category-pills-bar">
+            <button class="cat-pill-btn active" data-cat="all">🍽️ All Items</button>
+            <button class="cat-pill-btn" data-cat="specials">⭐ Today's Specials</button>
+            <button class="cat-pill-btn" data-cat="breakfast">🌅 Breakfast</button>
+            <button class="cat-pill-btn" data-cat="lunch">🍛 Lunch & Meals</button>
+            <button class="cat-pill-btn" data-cat="snacks">🥟 Snacks & Bites</button>
+            <button class="cat-pill-btn" data-cat="beverages">🥤 Beverages & Juices</button>
+          </div>
+
+          <!-- Pure Veg / Non-Veg Toggle -->
+          <div class="diet-toggle-group">
+            <button class="diet-btn active" data-diet="all">All</button>
+            <button class="diet-btn" data-diet="veg">🟢 Veg Only</button>
+            <button class="diet-btn" data-diet="nonveg">🔴 Non-Veg</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subview: Home (Daily Specials & Popular Items) -->
+      <div id="student-home-view"></div>
+
+      <!-- Subview: Full Menu -->
+      <div id="student-menu-view" style="display: none;">
+        <div id="menu-grid" class="food-grid"></div>
+      </div>
+
+      <!-- Subview: Orders History -->
+      <div id="student-orders-view" style="display: none;"></div>
+
+      <!-- Subview: Live Order & Queue Tracker -->
+      <div id="student-tracker-view" style="display: none;">
+        <div id="order-tracker-container"></div>
+      </div>
+
+      <!-- Subview: Wallet -->
+      <div id="student-wallet-view" style="display: none;"></div>
+
+      <!-- Subview: Favorites -->
+      <div id="student-favorites-view" style="display: none;"></div>
+
+      <!-- Subview: Feedback -->
+      <div id="student-feedback-view" style="display: none;"></div>
+
+      <!-- Subview: Profile -->
+      <div id="student-profile-view" style="display: none;"></div>
+
+    </section>
+
+    <!-- =================================================================
+         2. ADMINISTRATOR & KITCHEN SECTION
+         ================================================================= -->
+    <section id="admin-portal-wrapper" style="display: none;">
+      <!-- Dashboard Metrics (PRD: Section 6) -->
+      <div class="admin-metrics-grid">
+        <div class="admin-metric-card">
+          <div class="metric-navy-icon">📊</div>
+          <div class="metric-details">
+            <div id="metric-today-orders" class="metric-number">428</div>
+            <div class="metric-text">Total Orders</div>
+          </div>
+        </div>
+
+        <div class="admin-metric-card">
+          <div class="metric-navy-icon">⏳</div>
+          <div class="metric-details">
+            <div id="metric-pending-orders" class="metric-number">32</div>
+            <div class="metric-text">Pending Orders</div>
+          </div>
+        </div>
+
+        <div class="admin-metric-card">
+          <div class="metric-navy-icon">✅</div>
+          <div class="metric-details">
+            <div id="metric-completed-orders" class="metric-number">381</div>
+            <div class="metric-text">Completed Orders</div>
+          </div>
+        </div>
+
+        <div class="admin-metric-card">
+          <div class="metric-navy-icon">✕</div>
+          <div class="metric-details">
+            <div id="metric-cancelled-orders" class="metric-number">15</div>
+            <div class="metric-text">Cancelled / Refunded</div>
+          </div>
+        </div>
+
+        <div class="admin-metric-card">
+          <div class="metric-navy-icon">💰</div>
+          <div class="metric-details">
+            <div id="metric-today-sales" class="metric-number">₹38,450</div>
+            <div class="metric-text">Today's Revenue</div>
+          </div>
+        </div>
+
+        <div class="admin-metric-card">
+          <div class="metric-navy-icon">⚠️</div>
+          <div class="metric-details">
+            <div id="metric-low-stock" class="metric-number">2</div>
+            <div class="metric-text">Low Stock Items</div>
+          </div>
+        </div>
+
+        <div class="admin-metric-card">
+          <div class="metric-navy-icon">👥</div>
+          <div class="metric-details">
+            <div id="metric-active-queue" class="metric-number">24</div>
+            <div class="metric-text">Active Queue</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Tab Views -->
+      <div id="admin-orders-container"></div>
+      <div id="admin-menu-container" style="display: none;"></div>
+      <div id="admin-inventory-container" style="display: none;"></div>
+      <div id="admin-analytics-container" style="display: none;"></div>
+      <div id="admin-feedback-container" style="display: none;"></div>
+    </section>
+
+  </main>
+
+  <!-- ================= Mobile Bottom Navigation Bar ================= -->
+  <nav id="mobile-bottom-nav" class="mobile-bottom-nav" aria-label="Mobile Navigation">
+    <button class="mobile-nav-btn active" data-tab="home" onclick="window.studentPortal.switchStudentTab('home')">
+      <span>🏠</span>
+      <span>Home</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="menu" onclick="window.studentPortal.switchStudentTab('menu')">
+      <span>🍽️</span>
+      <span>Menu</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="tracker" onclick="window.studentPortal.switchStudentTab('tracker')">
+      <span>🎫</span>
+      <span>Track</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="orders" onclick="window.studentPortal.switchStudentTab('orders')">
+      <span>📜</span>
+      <span>Orders</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="wallet" onclick="window.studentPortal.switchStudentTab('wallet')">
+      <span>💳</span>
+      <span>Wallet</span>
+    </button>
+  </nav>
+
+  <!-- ================= Cart Drawer (White & Navy) ================= -->
+  <aside id="cart-drawer" class="cart-sidebar-drawer" aria-label="Shopping Cart Drawer">
+    <div class="cart-drawer-top">
+      <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-weight: 700; font-family: var(--font-heading);">
+        <span>🛒</span>
+        <span>Your Meal Tray</span>
+      </div>
+      <button class="btn-close-clean" style="color: #fff;" onclick="window.studentPortal.closeCartDrawer()" aria-label="Close cart">✕</button>
+    </div>
+
+    <div id="cart-items-list" class="cart-drawer-body"></div>
+    <div id="cart-footer" class="cart-drawer-bottom" style="display: none;"></div>
+  </aside>
+
+  <!-- ================= Checkout & Payment Modal ================= -->
+  <div id="checkout-modal" class="modal-overlay">
+    <div class="modal-dialog">
+      <div class="modal-header-clean">
+        <h3 class="modal-heading">Confirm Order & Payment</h3>
+        <button class="btn-close-clean" onclick="window.studentPortal.closeCheckoutModal()">✕</button>
+      </div>
+
+      <div class="modal-body-clean">
+        <div style="background: var(--bg-light); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--text-secondary);">Total Payable Amount</div>
+            <div style="font-size: 0.75rem; color: var(--success); font-weight: 600;">Includes 10% Campus Student Subsidy</div>
+          </div>
+          <div id="checkout-total-amt" style="font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; color: var(--primary-navy);">₹144.00</div>
+        </div>
+
+        <div class="form-field-group">
+          <label class="field-label" for="order-notes-input">Cooking Instructions (Optional):</label>
+          <input type="text" id="order-notes-input" class="field-input" placeholder="e.g. Less spicy, extra chutney..." />
+        </div>
+
+        <label class="field-label" style="margin-top: 1rem; margin-bottom: 0.5rem;">Select Payment Method:</label>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.65rem; margin-bottom: 1rem;">
+          <div class="payment-method-card selected" data-method="Campus Wallet" onclick="window.studentPortal.selectPaymentMethod('Campus Wallet')" style="background: var(--bg-light); border: 1px solid var(--border-medium); border-radius: var(--radius-sm); padding: 0.75rem; text-align: center; cursor: pointer;">
+            <div style="font-size: 1.4rem;">💳</div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary-navy);">Campus Wallet</div>
+            <div style="font-size: 0.7rem; color: var(--text-secondary);">1-Click Pay</div>
+          </div>
+
+          <div class="payment-method-card" data-method="UPI" onclick="window.studentPortal.selectPaymentMethod('UPI')" style="background: var(--bg-light); border: 1px solid var(--border-medium); border-radius: var(--radius-sm); padding: 0.75rem; text-align: center; cursor: pointer;">
+            <div style="font-size: 1.4rem;">📱</div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary-navy);">UPI QR Code</div>
+            <div style="font-size: 0.7rem; color: var(--text-secondary);">GPay, PhonePe</div>
+          </div>
+
+          <div class="payment-method-card" data-method="Debit/Credit Card" onclick="window.studentPortal.selectPaymentMethod('Debit/Credit Card')" style="background: var(--bg-light); border: 1px solid var(--border-medium); border-radius: var(--radius-sm); padding: 0.75rem; text-align: center; cursor: pointer;">
+            <div style="font-size: 1.4rem;">💳</div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary-navy);">Bank Card</div>
+            <div style="font-size: 0.7rem; color: var(--text-secondary);">Visa, RuPay</div>
+          </div>
+
+          <div class="payment-method-card" data-method="Pay at Counter" onclick="window.studentPortal.selectPaymentMethod('Pay at Counter')" style="background: var(--bg-light); border: 1px solid var(--border-medium); border-radius: var(--radius-sm); padding: 0.75rem; text-align: center; cursor: pointer;">
+            <div style="font-size: 1.4rem;">💵</div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary-navy);">Pay at Counter</div>
+            <div style="font-size: 0.7rem; color: var(--text-secondary);">Cash at pickup</div>
+          </div>
+        </div>
+
+        <div id="wallet-details-box" style="background: var(--navy-light); border-radius: var(--radius-sm); padding: 0.85rem 1rem; border: 1px solid var(--border-medium);">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-secondary);">Campus Wallet Balance:</div>
+              <div id="wallet-avail-balance" style="font-family: var(--font-heading); font-size: 1.15rem; font-weight: 800; color: var(--primary-navy);">₹450.00</div>
+            </div>
+            <button class="btn-secondary" style="font-size: 0.75rem;" onclick="window.app.topUpWallet(200)">
+              + Add ₹200
+            </button>
+          </div>
+        </div>
+
+        <div id="upi-details-box" style="display: none; background: var(--bg-light); border-radius: var(--radius-sm); padding: 1rem; text-align: center; border: 1px solid var(--border-medium);">
+          <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary-navy); margin-bottom: 0.4rem;">Scan UPI QR to Complete Order</div>
+          <svg width="100" height="100" viewBox="0 0 100 100" fill="none" style="margin: 0 auto; display: block; border-radius: 4px; background: #fff; padding: 6px; border: 1px solid var(--border-light);">
+            <rect width="100" height="100" fill="#ffffff"/>
+            <rect x="10" y="10" width="24" height="24" fill="#0B1F3A" rx="2"/>
+            <rect x="14" y="14" width="16" height="16" fill="#ffffff"/>
+            <rect x="18" y="18" width="8" height="8" fill="#0B1F3A"/>
+            <rect x="66" y="10" width="24" height="24" fill="#0B1F3A" rx="2"/>
+            <rect x="70" y="14" width="16" height="16" fill="#ffffff"/>
+            <rect x="74" y="18" width="8" height="8" fill="#0B1F3A"/>
+            <rect x="10" y="66" width="24" height="24" fill="#0B1F3A" rx="2"/>
+            <rect x="14" y="70" width="16" height="16" fill="#ffffff"/>
+            <rect x="18" y="74" width="8" height="8" fill="#0B1F3A"/>
+            <rect x="44" y="18" width="8" height="16" fill="#0B1F3A"/>
+            <rect x="42" y="42" width="16" height="16" fill="#0B1F3A"/>
+            <rect x="66" y="44" width="12" height="6" fill="#0B1F3A"/>
+            <rect x="42" y="68" width="8" height="14" fill="#0B1F3A"/>
+            <rect x="76" y="68" width="14" height="14" fill="#0B1F3A"/>
+          </svg>
+          <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.4rem;">UPI ID: <strong>canteen.campus@icici</strong></div>
+        </div>
+
+        <div id="card-details-box" style="display: none; background: var(--bg-light); border-radius: var(--radius-sm); padding: 1rem; border: 1px solid var(--border-medium);">
+          <input type="text" class="field-input" placeholder="Card Number: 4532 •••• •••• 8941" style="margin-bottom: 0.5rem;" />
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="text" class="field-input" placeholder="MM/YY" style="flex: 1;" />
+            <input type="password" class="field-input" placeholder="CVV" style="width: 80px;" />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer-clean">
+        <button class="btn-secondary" onclick="window.studentPortal.closeCheckoutModal()">Cancel</button>
+        <button class="btn-primary" onclick="window.studentPortal.submitOrder()">Confirm & Pay →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Payment Processing Animation ================= -->
+  <div id="payment-processing-modal" class="modal-overlay">
+    <div class="modal-dialog" style="max-width: 360px; text-align: center; padding: 2.5rem 1.5rem;">
+      <div style="width: 48px; height: 48px; border: 4px solid var(--border-light); border-top-color: var(--primary-navy); border-radius: 50%; margin: 0 auto 1.25rem; animation: spin 0.9s infinite linear;"></div>
+      <h3 style="font-family: var(--font-heading); font-size: 1.2rem; font-weight: 700; color: var(--primary-navy); margin-bottom: 0.35rem;">Verifying Payment...</h3>
+      <p style="font-size: 0.85rem; color: var(--text-secondary);">Connecting to campus payment gateway and generating token.</p>
+    </div>
+  </div>
+
+  <style>
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+  </style>
+
+  <!-- ================= Food Item Add/Edit Modal (Admin) ================= -->
+  <div id="edit-food-modal" class="modal-overlay">
+    <div class="modal-dialog">
+      <div class="modal-header-clean">
+        <h3 id="food-modal-title" class="modal-heading">Edit Food Item</h3>
+        <button class="btn-close-clean" onclick="document.getElementById('edit-food-modal').classList.remove('open')">✕</button>
+      </div>
+      <div class="modal-body-clean">
+        <input type="hidden" id="food-id-input" />
+        <div class="form-field-group">
+          <label class="field-label" for="food-name-input">Food Item Name:</label>
+          <input type="text" id="food-name-input" class="field-input" placeholder="e.g. Masala Dosa" />
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+          <div class="form-field-group" style="flex: 1;">
+            <label class="field-label" for="food-cat-input">Category:</label>
+            <select id="food-cat-input" class="field-input">
+              <option value="breakfast">Breakfast</option>
+              <option value="lunch">Lunch & Meals</option>
+              <option value="snacks">Snacks & Bites</option>
+              <option value="beverages">Beverages</option>
+            </select>
+          </div>
+          <div class="form-field-group" style="flex: 1;">
+            <label class="field-label" for="food-price-input">Price (₹):</label>
+            <input type="number" id="food-price-input" class="field-input" min="5" step="1" />
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+          <div class="form-field-group" style="flex: 1;">
+            <label class="field-label" for="food-stock-input">Stock Portions:</label>
+            <input type="number" id="food-stock-input" class="field-input" min="0" />
+          </div>
+          <div class="form-field-group" style="flex: 1;">
+            <label class="field-label" for="food-prep-input">Prep Time (mins):</label>
+            <input type="number" id="food-prep-input" class="field-input" min="1" />
+          </div>
+        </div>
+        <div class="form-field-group">
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
+            <input type="checkbox" id="food-veg-input" style="accent-color: var(--veg-color);" />
+            <span>Mark as Pure Vegetarian (🟢)</span>
+          </label>
+        </div>
+        <div class="form-field-group">
+          <label class="field-label" for="food-desc-input">Description / Ingredients:</label>
+          <textarea id="food-desc-input" class="field-input" rows="3"></textarea>
+        </div>
+        <div class="form-field-group">
+          <label class="field-label" for="food-image-input">Photo Selection:</label>
+          <select id="food-image-input" class="field-input">
+            <option value="assets/chicken_biryani.jpg">Chicken Dum Biryani</option>
+            <option value="assets/veg_meals.jpg">Deluxe Veg Thali Meals</option>
+            <option value="assets/paneer_fried_rice.jpg">Sizzling Paneer Fried Rice</option>
+            <option value="assets/masala_dosa.jpg">Crispy Masala Dosa</option>
+            <option value="assets/samosa_chai.jpg">Crispy Samosa & Masala Chai</option>
+            <option value="assets/lime_juice.jpg">Chilled Fresh Lime Soda</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer-clean">
+        <button class="btn-secondary" onclick="document.getElementById('edit-food-modal').classList.remove('open')">Cancel</button>
+        <button class="btn-primary" onclick="window.adminConsole.saveFoodItem()">Save Item</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Feedback Modal ================= -->
+  <div id="feedback-modal" class="modal-overlay">
+    <div class="modal-dialog">
+      <div class="modal-header-clean">
+        <h3 class="modal-heading">Rate Your Dining Experience</h3>
+        <button class="btn-close-clean" onclick="window.studentPortal.closeFeedbackModal()">✕</button>
+      </div>
+      <div class="modal-body-clean">
+        <div id="feedback-token-label" style="font-weight: 700; color: var(--primary-navy); margin-bottom: 1rem;">Order #A1042</div>
+
+        <div class="form-field-group">
+          <label class="field-label">Food Quality & Taste:</label>
+          <div style="font-size: 1.4rem;">⭐⭐⭐⭐⭐</div>
+        </div>
+
+        <div class="form-field-group">
+          <label class="field-label">Service & Queue Speed:</label>
+          <div style="font-size: 1.4rem;">⭐⭐⭐⭐⭐</div>
+        </div>
+
+        <div class="form-field-group">
+          <label class="field-label">Value for Money:</label>
+          <div style="font-size: 1.4rem;">⭐⭐⭐⭐⭐</div>
+        </div>
+
+        <div class="form-field-group">
+          <label class="field-label" for="feedback-comment-input">Comments or Suggestions:</label>
+          <textarea id="feedback-comment-input" class="field-input" rows="3" placeholder="Tell canteen staff what you loved or how to improve..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer-clean">
+        <button class="btn-secondary" onclick="window.studentPortal.closeFeedbackModal()">Cancel</button>
+        <button class="btn-primary" onclick="window.studentPortal.submitFeedback()">Submit Review ⭐</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Notifications Modal ================= -->
+  <div id="notifications-modal" class="modal-overlay">
+    <div class="modal-dialog">
+      <div class="modal-header-clean">
+        <h3 class="modal-heading">Campus Dining Notifications</h3>
+        <button class="btn-close-clean" onclick="window.app.closeNotifications()">✕</button>
+      </div>
+      <div class="modal-body-clean">
+        <div id="notifications-list" style="display: flex; flex-direction: column; gap: 0.65rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Toast Stack ================= -->
+  <div id="toast-stack" class="toast-stack"></div>
+
+  <!-- ================= Core Scripts ================= -->
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/student.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
